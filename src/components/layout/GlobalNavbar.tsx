@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
-import { 
-  Rocket, 
-  Compass, 
-  Wrench, 
-  Activity, 
-  Award, 
-  HelpCircle, 
-  Sparkles, 
-  BookOpen, 
-  ExternalLink, 
-  Volume2, 
-  VolumeX, 
+import {
+  Rocket,
+  Compass,
+  Wrench,
+  Activity,
+  Award,
+  HelpCircle,
+  Sparkles,
+  BookOpen,
+  ExternalLink,
+  Volume2,
+  VolumeX,
   RotateCcw,
   Zap,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useMission } from '../../context/MissionContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { DESTINATIONS, MISSION_BRIEFS } from '../../data/missionsData';
 import { EducationModal } from '../common/EducationModal';
 import { NASAChallengeLinksModal } from '../common/NASAChallengeLinks';
@@ -25,15 +28,17 @@ import { ConfirmationModal } from '../common/ConfirmationModal';
 import { sounds } from '../../utils/soundEffects';
 
 export const GlobalNavbar: React.FC = () => {
-  const { 
-    state, 
-    setStep, 
-    resources, 
-    loadDemoMission, 
-    resetMission, 
-    canNavigateToStep 
+  const {
+    state,
+    setStep,
+    resources,
+    loadDemoMission,
+    resetMission,
+    canNavigateToStep
   } = useMission();
   const { theme, toggleTheme } = useTheme();
+  const { logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [showEduModal, setShowEduModal] = useState(false);
   const [showNasaModal, setShowNasaModal] = useState(false);
@@ -44,6 +49,12 @@ export const GlobalNavbar: React.FC = () => {
   const toggleAudio = () => {
     const next = sounds.toggleSound();
     setSoundEnabled(next);
+  };
+
+  const handleLogout = () => {
+    sounds.playClick();
+    logout();
+    navigate('/signup');
   };
 
   const currentDestination = DESTINATIONS.find(d => d.id === state.destinationId);
@@ -130,9 +141,9 @@ export const GlobalNavbar: React.FC = () => {
           {/* Active Target Destination / Mission Badge (if equipped) */}
           {currentDestination && (
             <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-white/10">
-              <div 
-                className="w-2 h-2 rounded-full animate-pulse" 
-                style={{ backgroundColor: currentDestination.color }} 
+              <div
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ backgroundColor: currentDestination.color }}
               />
               <span className="text-[11px] font-mono text-slate-300 font-semibold truncate max-w-[130px]">
                 {currentDestination.name}
@@ -146,10 +157,10 @@ export const GlobalNavbar: React.FC = () => {
             ========================================================================= */}
         <nav className="flex items-center gap-1 sm:gap-1.5 bg-black/40 border border-white/10 p-1 rounded-full backdrop-blur-md">
           {NAV_STEPS.map((item) => {
-            const isActive = state.currentStep === item.id || 
+            const isActive = state.currentStep === item.id ||
               (item.id === 'hangar' && ['spacecraft', 'payload', 'launch', 'systems', 'trajectory', 'review'].includes(state.currentStep));
-            
-            const isClickable = item.id === 'start' || item.id === 'destination' || 
+
+            const isClickable = item.id === 'start' || item.id === 'destination' ||
               (item.id === 'hangar' && !!state.destinationId) ||
               (item.id === 'simulation' && !!state.trajectoryId) ||
               (item.id === 'results' && !!state.lastResult);
@@ -247,6 +258,18 @@ export const GlobalNavbar: React.FC = () => {
               title="Reset / Start New Mission"
             >
               <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Logout Button */}
+          {isAuthenticated && (
+            <button
+              onClick={handleLogout}
+              className="px-2.5 sm:px-3 py-1.5 rounded-full border border-red-500/40 bg-red-950/40 hover:bg-red-900/60 text-red-300 hover:text-white text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,0,0,0.2)]"
+              title="Logout from Terminal"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
           )}
         </div>

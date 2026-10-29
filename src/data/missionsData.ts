@@ -1,14 +1,14 @@
-import { 
-  MissionBrief, 
-  Destination, 
-  SpacecraftBus, 
-  PayloadInstrument, 
-  LaunchVehicle, 
-  PowerSystem, 
-  CommsSystem, 
-  PropulsionSystem, 
-  ThermalSystem, 
-  TrajectoryOption 
+import {
+  MissionBrief,
+  Destination,
+  SpacecraftBus,
+  PayloadInstrument,
+  LaunchVehicle,
+  PowerSystem,
+  CommsSystem,
+  PropulsionSystem,
+  ThermalSystem,
+  TrajectoryOption
 } from '../types/mission';
 
 export const MISSION_BRIEFS: MissionBrief[] = [
@@ -612,3 +612,4 @@ export const EDUCATIONAL_GLOSSARY: Record<string, { term: string; definition: st
     practicalTip: 'Budget savings with cheaper components increase the risk of in-flight malfunctions during the simulation.'
   }
 };
+export const missionsData = DESTINATIONS;

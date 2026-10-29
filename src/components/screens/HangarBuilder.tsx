@@ -194,7 +194,6 @@ const ResourceGauge: React.FC<{
           animate={{ width: `${pct}%` }}
           transition={{ type: 'spring', stiffness: 200, damping: 25 }}
         />
-        {/* Max marker line */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-slate-500/60"
           style={{ left: '100%' }}
@@ -264,7 +263,6 @@ const PartCard: React.FC<{
       )}
     </div>
 
-    {/* Stats grid */}
     <div className={`grid grid-cols-${Math.min(stats.length, 4)} gap-2 pt-2.5 mt-2 border-t border-white/10 text-xs`}>
       {stats.map((stat) => (
         <div key={stat.label}>
@@ -297,17 +295,9 @@ export const HangarBuilder: React.FC = () => {
     resetMission,
   } = useMission();
 
-  const [autoLaunchCountdown, setAutoLaunchCountdown] = useState<number | null>(null);
   const [mobileView, setMobileView] = useState<'parts' | '3d'>('3d');
-
-  const handleDirectLaunch = useCallback(() => {
-    sounds.playLaunch();
-    launchToPad();
-  }, [launchToPad]);
-
   const [activeCategory, setActiveCategory] = useState<HangarCategory>('chassis');
 
-  // Current selections for 3D viewer (only populated if selected or in demo mode)
   const currentBus = SPACECRAFT_BUSES.find((b) => b.id === state.busId) || null;
   const currentPower = POWER_SYSTEMS.find((p) => p.id === state.powerSystemId) || null;
   const currentComms = COMMS_SYSTEMS.find((c) => c.id === state.commsSystemId) || null;
@@ -315,7 +305,6 @@ export const HangarBuilder: React.FC = () => {
   const currentPayloads = PAYLOAD_INSTRUMENTS.filter((p) => state.payloadIds.includes(p.id));
   const currentDestination = DESTINATIONS.find((d) => d.id === state.destinationId);
 
-  // Completion tracking per category
   const completionMap = useMemo(
     () => ({
       chassis: !!state.busId,
@@ -333,32 +322,11 @@ export const HangarBuilder: React.FC = () => {
   const completedCount = Object.values(completionMap).filter(Boolean).length;
   const allComplete = completedCount === 8;
 
-  // Navigate to next incomplete category
-  const goToNextCategory = useCallback(() => {
-    const currentIdx = CATEGORIES.findIndex((c) => c.id === activeCategory);
-    for (let i = 1; i <= CATEGORIES.length; i++) {
-      const nextIdx = (currentIdx + i) % CATEGORIES.length;
-      const nextCat = CATEGORIES[nextIdx];
-      if (!completionMap[nextCat.id]) {
-        setActiveCategory(nextCat.id);
-        return;
-      }
-    }
-    // If all complete, just go next
-    if (currentIdx < CATEGORIES.length - 1) {
-      setActiveCategory(CATEGORIES[currentIdx + 1].id);
-    }
-  }, [activeCategory, completionMap]);
+  const handleDirectLaunch = useCallback(() => {
+    sounds.playLaunch();
+    launchToPad();
+  }, [launchToPad]);
 
-  // Navigate to previous category
-  const goToPrevCategory = useCallback(() => {
-    const currentIdx = CATEGORIES.findIndex((c) => c.id === activeCategory);
-    if (currentIdx > 0) {
-      setActiveCategory(CATEGORIES[currentIdx - 1].id);
-    }
-  }, [activeCategory]);
-
-  // ─── Render Part List by Category ────────────────────────────
   const renderParts = () => {
     switch (activeCategory) {
       case 'chassis':
@@ -555,7 +523,7 @@ export const HangarBuilder: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden bg-[#06070a]">
-      {/* Top Game HUD Header (Apple Frosted Glass) */}
+      {/* Top Game HUD Header */}
       <div className="h-14 bg-black/60 border-b border-white/10 px-3 sm:px-6 flex items-center justify-between z-20 backdrop-blur-2xl">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -608,7 +576,6 @@ export const HangarBuilder: React.FC = () => {
 
         {/* Mobile View Toggle & Quick Launch */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile View Selector Pill */}
           <div className="flex md:hidden items-center p-0.5 rounded-full bg-white/[0.08] border border-white/10 text-[11px]">
             <button
               onClick={() => setMobileView('parts')}
@@ -673,7 +640,7 @@ export const HangarBuilder: React.FC = () => {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* ─── LEFT: Category Tabs (vertical on desktop) ─────── */}
+        {/* LEFT: Vertical Category Tabs */}
         <div className="hidden md:flex w-[74px] bg-space-900/80 border-r border-slate-800/60 flex-col py-2 overflow-y-auto shrink-0 select-none">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.id;
@@ -695,7 +662,6 @@ export const HangarBuilder: React.FC = () => {
                 }`}
                 title={cat.kidQuestion}
               >
-                {/* Active indicator bar */}
                 {isActive && (
                   <motion.div
                     layoutId="hangar-tab-indicator"
@@ -704,20 +670,16 @@ export const HangarBuilder: React.FC = () => {
                   />
                 )}
 
-                {/* Step number badge */}
                 <span className={`text-[8px] font-mono px-1 rounded ${isActive ? 'bg-nasa-cyan/20 text-nasa-cyan font-bold' : isDone ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-slate-500'}`}>
                   {cat.stepNum}
                 </span>
 
-                {/* Big emoji & icon */}
                 <span className="text-base leading-none my-0.5">{cat.emoji}</span>
 
-                {/* Label */}
                 <span className="text-[9px] font-mono font-bold uppercase tracking-tight leading-tight text-center truncate max-w-[66px]">
                   {cadetMode ? cat.cadetLabel : cat.label}
                 </span>
 
-                {/* Completion badge */}
                 {isDone && (
                   <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 flex items-center justify-center">
                     <Check className="w-1.5 h-1.5 text-white stroke-[3]" />
@@ -727,7 +689,6 @@ export const HangarBuilder: React.FC = () => {
             );
           })}
 
-          {/* Progress ring at bottom */}
           <div className="mt-auto pt-3 flex flex-col items-center gap-1 border-t border-slate-800/50 mx-2">
             <div className="relative w-10 h-10">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -765,7 +726,7 @@ export const HangarBuilder: React.FC = () => {
           </div>
         </div>
 
-        {/* ─── CENTER: 3D Spacecraft Viewer ──────────────────── */}
+        {/* CENTER: 3D Spacecraft Viewer */}
         <div className={`flex-1 relative bg-[#030305] min-w-0 ${mobileView === '3d' ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
           <div className="flex-1 w-full h-full relative">
             <SpaceCanvas cameraPosition={[0, 0.35, 4.4]} fov={45} showStars={false}>
@@ -805,29 +766,60 @@ export const HangarBuilder: React.FC = () => {
               )}
             </div>
 
-            {/* Commander Nova Hints (top-right) */}
-            <div className="absolute top-4 right-4 z-10 w-64 max-w-[calc(100vw-32px)]">
-              <CommanderNova />
+            {/* Commander Nova Hints */}
+            <div className="absolute bottom-4 left-4 right-4 z-10 pointer-events-none hidden sm:block">
+              <CommanderNova
+                message={activeCategoryData.kidTip}
+                mood="excited"
+                compact
+              />
             </div>
           </div>
+        </div>
 
-          {/* Resource Gauges Overlay (bottom of 3D view) */}
-          <div className="p-3 sm:p-4 bg-gradient-to-t from-[#06070a] via-[#06070a]/95 to-transparent z-10">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        {/* RIGHT: Part Selector Panel */}
+        <div className={`w-full md:w-[380px] lg:w-[420px] bg-space-900/90 border-l border-slate-800/60 flex flex-col shrink-0 backdrop-blur-xl ${mobileView === 'parts' ? 'flex flex-col flex-1' : 'hidden md:flex'}`}>
+          {/* Header info for selected category */}
+          <div className="p-4 border-b border-slate-800/60 bg-black/30">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-mono text-nasa-cyan uppercase tracking-widest font-bold">
+                Step {activeCategoryData.stepNum} of 8
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">
+                {completionMap[activeCategory] ? '✅ Subsystem Configured' : '⚠️ Pending Selection'}
+              </span>
+            </div>
+            <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              <span>{activeCategoryData.emoji}</span>
+              {cadetMode ? activeCategoryData.cadetLabel : activeCategoryData.label}
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {cadetMode ? activeCategoryData.cadetDescription : activeCategoryData.description}
+            </p>
+          </div>
+
+          {/* Scrollable list of parts */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+            {renderParts()}
+          </div>
+
+          {/* Bottom Live Resource Bar & Navigation */}
+          <div className="p-4 bg-black/50 border-t border-slate-800/60 space-y-3">
+            <div className="flex gap-3">
               <ResourceGauge
                 label="Mass"
-                cadetLabel="⚖️ Weight"
+                cadetLabel="Weight"
                 value={resources.totalMass}
                 max={resources.massLimit}
                 unit="kg"
                 isOver={resources.isOverMass}
                 isCadet={cadetMode}
-                color="bg-cyan-500"
+                color="bg-[#0071e3]"
                 icon="⚖️"
               />
               <ResourceGauge
                 label="Budget"
-                cadetLabel="💰 Money"
+                cadetLabel="Credits"
                 value={resources.totalCost}
                 max={resources.budgetLimit}
                 unit="M"
@@ -836,144 +828,36 @@ export const HangarBuilder: React.FC = () => {
                 color="bg-emerald-500"
                 icon="💰"
               />
-              <ResourceGauge
-                label="Power"
-                cadetLabel="⚡ Electricity"
-                value={resources.powerRequired}
-                max={resources.powerGenerated}
-                unit="W"
-                isOver={resources.isPowerDeficit}
-                isCadet={cadetMode}
-                color="bg-amber-500"
-                icon="⚡"
-              />
-              <ResourceGauge
-                label="Fuel"
-                cadetLabel="⛽ Fuel"
-                value={resources.deltaVRequired}
-                max={resources.deltaVAvailable}
-                unit="m/s"
-                isOver={resources.isDeltaVDeficit}
-                isCadet={cadetMode}
-                color="bg-orange-500"
-                icon="⛽"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ─── RIGHT: Parts Panel ────────────────────────────── */}
-        <div className={`w-full md:w-[360px] bg-black/40 md:border-l border-white/10 flex flex-col overflow-hidden backdrop-blur-2xl ${mobileView === 'parts' ? 'flex' : 'hidden md:flex'}`}>
-          {/* Panel Header - Child-Friendly Step Guidance */}
-          <div className="p-3.5 bg-gradient-to-r from-space-900 via-cyan-950/30 to-space-900 border-b border-slate-800">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-nasa-cyan/20 border border-nasa-cyan/40 text-nasa-cyan font-mono font-bold text-[10px] flex items-center justify-center">
-                  {activeCategoryData.stepNum}
-                </span>
-                <span className="text-base">{activeCategoryData.emoji}</span>
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  {cadetMode ? activeCategoryData.cadetLabel : activeCategoryData.label}
-                </span>
-              </div>
-              {completionMap[activeCategory] && (
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
-                  <Check className="w-3 h-3 stroke-[3]" /> CHOSEN
-                </span>
-              )}
             </div>
 
-            <p className="text-xs font-bold text-slate-100 mb-1.5">
-              {activeCategoryData.kidQuestion}
-            </p>
-
-            <div className="p-2 rounded-xl bg-space-950/80 border border-slate-800 text-[11px] text-cyan-300 font-sans flex items-start gap-1.5 leading-snug">
-              <span className="shrink-0">💡</span>
-              <span>{activeCategoryData.kidTip}</span>
-            </div>
-          </div>
-
-          {/* Scrollable Parts List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeCategory}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-3"
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  goToPrevStep();
+                }}
+                className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                {renderParts()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
 
-          {/* Bottom Action Bar with Step Navigation */}
-          <div className="p-3 border-t border-slate-800/80 bg-space-950/95 space-y-2">
-            {allComplete && (
-              <div className="p-2.5 rounded-sm bg-emerald-950/90 border border-emerald-500/50 flex items-center justify-between text-xs font-mono text-emerald-300">
-                <div>
-                  <span className="font-bold text-white block">[ALL 8 SUBSYSTEMS INTEGRATED]</span>
-                  <span className="text-[10px] text-emerald-400">
-                    {autoLaunchCountdown !== null 
-                      ? `Auto-transferring to Launch Pad in ${autoLaunchCountdown}s...` 
-                      : 'Spacecraft flight certified.'}
-                  </span>
-                </div>
-                <button
-                  onClick={handleDirectLaunch}
-                  className="px-3 py-1 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs cursor-pointer shadow-sm"
-                >
-                  GO TO PAD NOW ➔
-                </button>
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              {activeCategoryData.stepNum > 1 && (
-                <button
-                  onClick={() => {
-                    sounds.playClick();
-                    goToPrevCategory();
-                  }}
-                  className="flex-1 py-2 rounded-sm bg-space-850 hover:bg-space-800 text-slate-300 text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>PREV STEP</span>
-                </button>
-              )}
-              {activeCategoryData.stepNum < 8 ? (
-                <button
-                  onClick={() => {
-                    sounds.playClick();
-                    goToNextCategory();
-                  }}
-                  className="flex-1 py-2 rounded-sm bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-1.5 border border-cyan-500/40 cursor-pointer"
-                >
-                  <span>NEXT STEP</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleDirectLaunch}
-                  className="flex-1 py-2 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <span>FINISH SELECTION [✓]</span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  setStep('review');
+                }}
+                className="px-5 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/25 cursor-pointer"
+              >
+                <span>Review & Launch</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-
-            {/* Direct Launch to Pad button */}
-            <button
-              onClick={handleDirectLaunch}
-              className="w-full py-3 rounded-sm text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-black cursor-pointer shadow-sm"
-            >
-              <span>{allComplete ? 'PROCEED TO LAUNCH PAD // COMMENCE FLIGHT [➔]' : 'FINISH CONFIGURATION // GO TO LAUNCH PAD [➔]'}</span>
-            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default HangarBuilder;
